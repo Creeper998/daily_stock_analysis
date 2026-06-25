@@ -13,6 +13,7 @@
 | 部署到服务器或云平台 | [部署指南](DEPLOY.md) | [云端 WebUI 部署](deploy-webui-cloud.md)、[Zeabur 部署](docker/zeabur-deployment.md) |
 | 使用 Bot / IM 接入 | [Bot 命令与接入](bot-command.md) | [Bot 平台配置](bot/) |
 | 排查运行问题 | [FAQ](FAQ.md) | [更新日志](CHANGELOG.md) |
+| 准备二次开发 | [项目功能、技术架构与二次开发指南](development-overview.md) | [贡献指南](CONTRIBUTING.md) |
 | 参与开发或提交 PR | [贡献指南](CONTRIBUTING.md) | [API 规格](architecture/api_spec.json) |
 
 ## 快速开始
@@ -61,6 +62,7 @@
 
 | 文档 | 内容 |
 | --- | --- |
+| [项目功能、技术架构与二次开发指南](development-overview.md) | 完整功能、用户体验、前后端技术栈、本地环境、配置、启动方式、验证命令和产品化演进建议 |
 | [API 规格](architecture/api_spec.json) | FastAPI OpenAPI 规格产物 |
 | [贡献指南](CONTRIBUTING.md) | Issue、PR、测试、文档同步和协作要求 |
 
