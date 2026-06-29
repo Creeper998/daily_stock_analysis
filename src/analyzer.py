@@ -3927,7 +3927,7 @@ class GeminiAnalyzer:
     def _extract_analysis_json_object(self, response_text: str) -> Tuple[str, Dict[str, Any]]:
         """Extract the single allowed JSON object from an LLM response."""
 
-        text = response_text or ""
+        text = self._strip_leading_think_blocks(response_text or "")
         stripped = text.strip()
         if not stripped:
             raise ValueError("empty_response")
@@ -3942,7 +3942,11 @@ class GeminiAnalyzer:
         if len(fenced_matches) == 1:
             match = fenced_matches[0]
             outside = (text[:match.start()] + text[match.end():]).strip()
-            if outside:
+            # Some reasoning models (notably MiniMax) wrap the final answer in
+            # prose even when explicitly asked for JSON only.  Prose is safe to
+            # ignore as long as it does not contain another JSON object; the
+            # fenced object remains the single unambiguous parser candidate.
+            if outside and self._contains_embedded_json_object(outside):
                 raise ValueError("ambiguous_json")
             fence_lang = (match.group("lang") or "").strip().lower()
             if fence_lang not in {"", "json"}:
@@ -3960,6 +3964,19 @@ class GeminiAnalyzer:
                 raise ValueError("ambiguous_json") from exc
             raise
         return stripped, data
+
+    @staticmethod
+    def _strip_leading_think_blocks(text: str) -> str:
+        """Remove complete leading ``<think>`` blocks from reasoning models."""
+        remaining = text.lstrip()
+        open_tag = "<think>"
+        close_tag = "</think>"
+        while remaining.lower().startswith(open_tag):
+            close_index = remaining.lower().find(close_tag, len(open_tag))
+            if close_index < 0:
+                raise ValueError("ambiguous_json")
+            remaining = remaining[close_index + len(close_tag):].lstrip()
+        return remaining
 
     def _load_analysis_json_candidate(self, json_str: str) -> Dict[str, Any]:
         """Parse one already-selected JSON candidate, repairing common LLM JSON drift."""
@@ -3985,18 +4002,14 @@ class GeminiAnalyzer:
     @staticmethod
     def _contains_embedded_json_object(text: str) -> bool:
         decoder = json.JSONDecoder()
-        count = 0
         for index, char in enumerate(text):
             if char != "{":
                 continue
             try:
-                _obj, end = decoder.raw_decode(text[index:])
+                obj, _end = decoder.raw_decode(text[index:])
             except json.JSONDecodeError:
                 continue
-            count += 1
-            before = text[:index].strip()
-            after = text[index + end:].strip()
-            if count > 1 or before or after:
+            if isinstance(obj, dict):
                 return True
         return False
 

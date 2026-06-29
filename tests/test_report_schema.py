@@ -298,13 +298,44 @@ class TestAnalyzerSchemaFallback(unittest.TestCase):
 
         self.assertEqual(getattr(context.exception, "details", {}).get("reason"), "ambiguous_json")
 
-    def test_validate_json_response_rejects_generic_fence_with_outside_text(self) -> None:
+    def test_validate_json_response_accepts_single_fence_with_outside_prose(self) -> None:
+        analyzer = GeminiAnalyzer.__new__(GeminiAnalyzer)
+        analyzer._config_override = SimpleNamespace(generation_backend="litellm")
+
+        analyzer._validate_json_response("""Here is the JSON:
+```
+{"sentiment_score": 70, "trend_prediction": "看多", "operation_advice": "持有"}
+```
+Analysis complete.""")
+
+    def test_validate_json_response_accepts_minimax_think_then_single_fence(self) -> None:
+        analyzer = GeminiAnalyzer.__new__(GeminiAnalyzer)
+        analyzer._config_override = SimpleNamespace(generation_backend="litellm")
+
+        analyzer._validate_json_response("""<think>
+I will compare several indicators before producing the final answer.
+Example score ranges are 40-50, but this is not the final payload.
+</think>
+
+# Decision dashboard
+```json
+{
+  "stock_name": "贵州茅台",
+  "sentiment_score": 45,
+  "trend_prediction": "看空",
+  "operation_advice": "观望",
+  "analysis_summary": "趋势仍弱"
+}
+```
+The dashboard is complete.""")
+
+    def test_validate_json_response_rejects_fence_with_second_json_outside(self) -> None:
         analyzer = GeminiAnalyzer.__new__(GeminiAnalyzer)
         analyzer._config_override = SimpleNamespace(generation_backend="litellm")
 
         with self.assertRaises(Exception) as context:
-            analyzer._validate_json_response("""Here is the JSON:
-```
+            analyzer._validate_json_response("""{"sentiment_score": 80}
+```json
 {"sentiment_score": 70, "trend_prediction": "看多"}
 ```""")
 

@@ -221,6 +221,7 @@ LITELLM_MODEL=ollama/qwen3:8b
 ### MiniMax 渠道模型填写说明
 
 - 如果你通过 OpenAI Compatible 渠道接 MiniMax，请在渠道模型里直接填写 `minimax/<模型名>`，例如 `minimax/MiniMax-M1`。
+- MiniMax 推理模型即使收到“仅输出 JSON”的提示，也可能返回前置 `<think>` 思考块及 JSON 前后说明文字。普通个股分析会忽略完整的前置思考块和唯一 JSON 代码块外的普通说明，但仍会拒绝多个 JSON 候选，避免误选分析结果。
 - Web 设置页里的主模型、Agent 主模型、Fallback、Vision 下拉会保留这个值原样展示，不会再错误改写成 `openai/minimax/<模型名>`。
 
 ### 问股 Agent / LiteLLM 配置兼容说明

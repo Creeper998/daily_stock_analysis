@@ -214,6 +214,7 @@ LITELLM_MODEL=ollama/qwen3:8b
 ### MiniMax Model Naming in Channel Mode
 
 - If you access MiniMax through an OpenAI-compatible channel, enter the model as `minimax/<model-name>` in the channel model list, for example `minimax/MiniMax-M1`.
+- MiniMax reasoning models may emit a leading `<think>` block and prose around the final JSON even when prompted for JSON only. Stock analysis ignores a complete leading reasoning block and harmless prose around one JSON fence, while still rejecting multiple JSON candidates to avoid selecting an ambiguous report.
 - The Web settings page now keeps that value unchanged in Primary, Agent Primary, Fallback, and Vision selectors instead of rewriting it to `openai/minimax/<model-name>`.
 
 ### Ask-Stock Agent / LiteLLM compatibility notes
